@@ -1,0 +1,40 @@
+---
+- name: Настройка сайта Nginx
+  hosts: localhost
+  connection: local
+  become: true
+
+  vars:
+    app_name: "Мой учебный сайт"
+    root_dir: "/var/www/ansible-site"
+    nginx_port: 8080
+
+  tasks:
+    - name: Установить Nginx
+      ansible.builtin.apt:
+        name: nginx
+        state: present
+        update_cache: true
+
+    - name: Создать каталог сайта
+      ansible.builtin.file:
+        path: "{{ root_dir }}"
+        state: directory
+        mode: '0755'
+
+    - name: Создать HTML страницу
+      ansible.builtin.template:
+        src: templates/index.html.j2
+        dest: "{{ root_dir }}/index.html"
+        mode: '0644'
+
+    - name: Создать конфигурацию Nginx
+      ansible.builtin.template:
+        src: templates/nginx.conf.j2
+        dest: /etc/nginx/conf.d/student_site.conf
+        mode: '0644'
+
+    - name: Перечитать конфигурацию Nginx
+      ansible.builtin.service:
+        name: nginx
+        state: reloaded
